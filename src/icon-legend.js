@@ -41,10 +41,6 @@ L.Control.IconLegend = L.Control.extend({
     onAdd: function () {
         return this._container;
     },
-
-    onRemove: function (map) {
-        L.DomUtil.remove(this._container);
-    }
 })
 
 
