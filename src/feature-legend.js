@@ -1,4 +1,4 @@
-L.Control.IconLegend = L.Control.extend({
+L.Control.FeatureLegend = L.Control.extend({
     options: {
         position: 'topleft',
         title: 'Legend',
@@ -11,7 +11,7 @@ L.Control.IconLegend = L.Control.extend({
     },
 
     _buildContainer: function () {
-        this._container = L.DomUtil.create('div', 'leaflet-control-legend');
+        this._container = L.DomUtil.create('div', 'leaflet-control-feature-legend');
 
         this._buildTitle();
         this._buildItems();
@@ -19,7 +19,7 @@ L.Control.IconLegend = L.Control.extend({
 
     _buildTitle: function () {
         if (this.options.title) {
-            let title = L.DomUtil.create('h3', 'leaflet-control-legend-title', this._container);
+            let title = L.DomUtil.create('h3', 'leaflet-control-feature-legend-title', this._container);
             title.innerHTML = this.options.title;
         }
     },
@@ -31,7 +31,7 @@ L.Control.IconLegend = L.Control.extend({
 
                 let itemDiv = L.DomUtil.create('div', '', this._container);
 
-                let itemIcon = L.DomUtil.create('img', 'leaflet-control-legend-icon', itemDiv);
+                let itemIcon = L.DomUtil.create('img', 'leaflet-control-feature-legend-icon', itemDiv);
                 try {
                     itemIcon.src = itemOptions.icon.options.iconUrl;
 
@@ -59,6 +59,6 @@ L.Control.IconLegend = L.Control.extend({
 })
 
 
-L.control.iconLegend = function (options) {
-    return new L.Control.IconLegend(options);
+L.control.featureLegend = function (options) {
+    return new L.Control.FeatureLegend(options);
 };
