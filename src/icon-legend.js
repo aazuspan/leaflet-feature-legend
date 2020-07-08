@@ -30,7 +30,12 @@ L.Control.IconLegend = L.Control.extend({
                 let itemDiv = L.DomUtil.create('div', '', this._container);
 
                 let itemIcon = L.DomUtil.create('img', 'leaflet-control-legend-icon', itemDiv);
-                itemIcon.src = this.options.items[item].options.iconUrl;
+                try {
+                    itemIcon.src = this.options.items[item].options.iconUrl;
+                }
+                catch (error) {
+                    throw ('Error: Item icons must be type L.Icon with a defined iconUrl.');
+                }
 
                 let itemTitle = L.DomUtil.create('span', '', itemDiv);
                 itemTitle.innerHTML = item;
