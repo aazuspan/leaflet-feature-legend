@@ -1,0 +1,19 @@
+.leaflet-control-legend-icon {
+  position: relative;
+  margin: 0px 3px 0px 4px;
+  top: 2px;
+  height: 15px;
+}
+
+.leaflet-control-legend-title {
+  margin: 3px;
+}
+
+.leaflet-control-legend {
+  padding: 6px 10px 6px 6px;
+  color: #333;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  background-clip: padding-box;
+}
