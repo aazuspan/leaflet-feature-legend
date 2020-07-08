@@ -27,11 +27,21 @@ L.Control.IconLegend = L.Control.extend({
     _buildItems: function () {
         if (this.options.items) {
             for (let item in this.options.items) {
+                let itemOptions = this.options.items[item];
+
                 let itemDiv = L.DomUtil.create('div', '', this._container);
 
                 let itemIcon = L.DomUtil.create('img', 'leaflet-control-legend-icon', itemDiv);
                 try {
-                    itemIcon.src = this.options.items[item].options.iconUrl;
+                    itemIcon.src = itemOptions.icon.options.iconUrl;
+
+                    // Override image dimensions if they are provided
+                    if (itemOptions.width) {
+                        itemIcon.width = itemOptions.width;
+                    }
+                    if (itemOptions.height) {
+                        itemIcon.height = itemOptions.height;
+                    }
                 }
                 catch (error) {
                     throw ('Error: Item icons must be type L.Icon with a defined iconUrl.');
