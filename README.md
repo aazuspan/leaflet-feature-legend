@@ -23,5 +23,5 @@ const legend = L.control.iconLegend({
     }
 }).addTo(myMap);
 ```
-<a href="https://aazuspan.github.io/leaflet-icon-legend/demo/index.html"><img src="https://i.imgur.com/UIgLgko.jpg" title="Interactive demo" /></a>
+<a href="https://aazuspan.github.io/leaflet-feature-legend/demo/index.html"><img src="https://i.imgur.com/UIgLgko.jpg" title="Interactive demo" /></a>
 
