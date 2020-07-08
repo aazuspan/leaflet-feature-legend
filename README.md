@@ -1,5 +1,5 @@
 # leaflet-feature-legend
-A Leaflet plugin for creating feature legends.
+A Leaflet plugin for creating legends of features.
 
 ### Example
 ```
@@ -13,7 +13,7 @@ L.marker([51.52, -0.091], { icon: redIcon }).addTo(myMap);
 L.marker([51.505, -0.115], { icon: yellowIcon }).addTo(myMap);
 
 // Create your custom legend here
-const legend = L.control.iconLegend({
+const legend = L.control.featureLegend({
     position: "bottomleft",
     title: "Shapes",
     items: {
