@@ -1,0 +1,22 @@
+{
+  "name": "leaflet-feature-legend",
+  "version": "1.0.0",
+  "description": "A Leaflet plugin for generating legends of features.",
+  "main": "src/feature-legend.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aazuspan/leaflet-feature-legend.git"
+  },
+  "author": "Aaron Zuspan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aazuspan/leaflet-feature-legend/issues"
+  },
+  "homepage": "https://github.com/aazuspan/leaflet-feature-legend#readme",
+  "dependencies": {
+    "leaflet": "^1.6.0"
+  }
+}
