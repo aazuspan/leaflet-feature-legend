@@ -1,5 +1,5 @@
-# leaflet-icon-legend
-A Leaflet plugin for creating feature legends using icons
+# leaflet-feature-legend
+A Leaflet plugin for creating feature legends.
 
 ### Example
 ```
