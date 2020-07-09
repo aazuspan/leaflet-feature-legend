@@ -20,7 +20,7 @@ L.Control.FeatureLegend = L.Control.extend({
     _buildTitle: function () {
         if (this.options.title) {
             let title = L.DomUtil.create('h3', 'leaflet-control-feature-legend-title', this._container);
-            title.innerHTML = this.options.title;
+            title.innerText = this.options.title;
         }
     },
 
@@ -48,7 +48,7 @@ L.Control.FeatureLegend = L.Control.extend({
                 }
 
                 let itemTitle = L.DomUtil.create('span', '', itemDiv);
-                itemTitle.innerHTML = item;
+                itemTitle.innerText = item;
             }
         }
     },
