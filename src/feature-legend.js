@@ -8,31 +8,29 @@ L.Control.FeatureLegend = L.Control.extend({
     initialize: function (options) {
         L.Util.setOptions(this, options);
         this._buildContainer();
-        this.testDraw();
-    },
-
-    // This works for cirlce markers or circles. Method is taken directly from Leaflet/Canvas.js
-    testDraw: function () {
-        let layer = L.circleMarker([51.51, -0.09], { color: 'red', pane: 'popupPane' }).addTo(myMap);
-        this._drawCircle(layer);
     },
 
     // Stolen directly from Leaflet/Canvas.js, but repurposed to draw at a fixed location in the legend
     _drawCircle: function (layer) {
-        // const myCanvas = document.getElementById('my-house');
         const ctx = this._canvas.getContext('2d');
+        let options = layer.options;
 
-        let r = Math.max(Math.round(layer._radius), 1);
+        let radiusOffset = 0;
+
+        if (options.stroke && options.weight !== 0) {
+            radiusOffset = options.weight;
+        }
+
+        // TODO: Replace 18 with max icon size from options
+        let r = Math.min(Math.round(layer._radius), (18 - radiusOffset) / 2);
         let s = (Math.max(Math.round(layer._radiusY), 1) || r) / r;
 
-        // Specify position of the marker in the canvas here
-        let x = 20;
-        let y = 20;
+        // Calculate marker position based on radius and stroke width
+        let x = r + radiusOffset / 2;
+        let y = r + radiusOffset / 2;
 
         ctx.beginPath();
         ctx.arc(x, y / s, r, 0, Math.PI * 2, false);
-
-        var options = layer.options;
 
         if (options.fill) {
             ctx.globalAlpha = options.fillOpacity;
@@ -64,38 +62,65 @@ L.Control.FeatureLegend = L.Control.extend({
         if (this.options.title) {
             let title = L.DomUtil.create('h3', 'leaflet-control-feature-legend-title', this._container);
             title.innerText = this.options.title;
-
-            this._canvas = L.DomUtil.create('canvas', '', title);
         }
     },
 
     _buildItems: function () {
         if (this.options.items) {
             for (let item in this.options.items) {
-                let itemOptions = this.options.items[item];
+                let itemLayer = this.options.items[item];
 
-                let itemDiv = L.DomUtil.create('div', '', this._container);
+                if (!this._layerIsSupported(itemLayer)) {
+                    throw new Error(`Error: "${item}" is not a supported marker. Use only L.Marker, L.CircleMarker, or L.Circle.`);
+                }
 
-                let itemIcon = L.DomUtil.create('img', 'leaflet-control-feature-legend-icon', itemDiv);
+                let itemDiv = L.DomUtil.create('div', null, this._container);
+
+                let icon = null;
+
                 try {
-                    itemIcon.src = itemOptions.icon.options.iconUrl;
-
-                    // Override image dimensions if they are provided
-                    if (itemOptions.width) {
-                        itemIcon.width = itemOptions.width;
-                    }
-                    if (itemOptions.height) {
-                        itemIcon.height = itemOptions.height;
-                    }
+                    // TODO: Add support for Leaflet default marker
+                    icon = itemLayer.getIcon();
                 }
                 catch (error) {
-                    throw ('Error: Item icons must be type L.Icon with a defined iconUrl.');
+                }
+
+                // Markers with icons
+                if (icon) {
+                    let itemIcon = L.DomUtil.create('img', 'leaflet-control-feature-legend-icon', itemDiv);
+
+                    try {
+                        itemIcon.src = icon.options.iconUrl;
+                        console.log(itemIcon.src)
+                        // TODO: Set this as an option in the feature legend
+                        itemIcon.width = 18;
+                    }
+                    catch (error) {
+                        // console.log(itemLayer.options.icon)
+                        throw (`Error: "${item}" has an invalid icon. Icons must be type L.Icon.`);
+                    }
+                }
+
+                // Markers without icons
+                else {
+                    this._canvas = L.DomUtil.create('canvas', "leaflet-control-feature-legend-icon", itemDiv);
+                    this._canvas.height = 18;
+                    this._canvas.width = 18;
+                    this._drawCircle(itemLayer);
                 }
 
                 let itemTitle = L.DomUtil.create('span', '', itemDiv);
                 itemTitle.innerText = item;
             }
         }
+    },
+
+    // Check if a given layer belongs to a class that can be added to the legend
+    _layerIsSupported: function (layer) {
+        if (layer instanceof L.CircleMarker || layer instanceof L.Circle || layer instanceof L.Marker) {
+            return true;
+        }
+        return false;
     },
 
     onAdd: function () {
