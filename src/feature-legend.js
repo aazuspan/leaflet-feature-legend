@@ -3,6 +3,7 @@ L.Control.FeatureLegend = L.Control.extend({
         position: 'topleft',
         title: 'Legend',
         items: {},
+        maxIconSize: 18,
     },
 
     initialize: function (options) {
@@ -21,16 +22,12 @@ L.Control.FeatureLegend = L.Control.extend({
             radiusOffset = options.weight;
         }
 
-        // TODO: Replace 18 with max icon size from options
-        let r = Math.min(Math.round(layer._radius), (18 - radiusOffset) / 2);
+        let r = Math.min(Math.round(layer._radius), (this.options.maxIconSize - radiusOffset) / 2);
         let s = (Math.max(Math.round(layer._radiusY), 1) || r) / r;
-
-        // Calculate marker position based on radius and stroke width
-        let x = r + radiusOffset / 2;
-        let y = r + radiusOffset / 2;
+        let x = this.options.maxIconSize / 2;
 
         ctx.beginPath();
-        ctx.arc(x, y / s, r, 0, Math.PI * 2, false);
+        ctx.arc(x, x / s, r, 0, Math.PI * 2, false);
 
         if (options.fill) {
             ctx.globalAlpha = options.fillOpacity;
@@ -92,11 +89,9 @@ L.Control.FeatureLegend = L.Control.extend({
                     try {
                         itemIcon.src = icon.options.iconUrl;
                         console.log(itemIcon.src)
-                        // TODO: Set this as an option in the feature legend
-                        itemIcon.width = 18;
+                        itemIcon.width = this.options.maxIconSize;
                     }
                     catch (error) {
-                        // console.log(itemLayer.options.icon)
                         throw (`Error: "${item}" has an invalid icon. Icons must be type L.Icon.`);
                     }
                 }
@@ -104,8 +99,8 @@ L.Control.FeatureLegend = L.Control.extend({
                 // Markers without icons
                 else {
                     this._canvas = L.DomUtil.create('canvas', "leaflet-control-feature-legend-icon", itemDiv);
-                    this._canvas.height = 18;
-                    this._canvas.width = 18;
+                    this._canvas.height = this.options.maxIconSize;
+                    this._canvas.width = this.options.maxIconSize;
                     this._drawCircle(itemLayer);
                 }
 
