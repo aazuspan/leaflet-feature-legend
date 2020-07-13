@@ -4,6 +4,7 @@ L.Control.FeatureLegend = L.Control.extend({
         title: 'Legend',
         items: {},
         maxIconSize: 18,
+        minIconSize: 1
     },
 
     initialize: function (options) {
@@ -11,7 +12,7 @@ L.Control.FeatureLegend = L.Control.extend({
         this._buildContainer();
     },
 
-    // Stolen directly from Leaflet/Canvas.js, but repurposed to draw at a fixed location in the legend
+    // Repurposed from Leaflet/Canvas.js to draw paths at a fixed location in the legend
     _drawCircle: function (layer) {
         const ctx = this._canvas.getContext('2d');
         let options = layer.options;
@@ -22,12 +23,11 @@ L.Control.FeatureLegend = L.Control.extend({
             radiusOffset = options.weight;
         }
 
-        let r = Math.min(Math.round(layer._radius), (this.options.maxIconSize - radiusOffset) / 2);
-        let s = (Math.max(Math.round(layer._radiusY), 1) || r) / r;
+        let r = Math.max(Math.min(Math.round(layer._radius), (this.options.maxIconSize - radiusOffset) / 2), this.options.minIconSize);
         let x = this.options.maxIconSize / 2;
 
         ctx.beginPath();
-        ctx.arc(x, x / s, r, 0, Math.PI * 2, false);
+        ctx.arc(x, x, r, 0, Math.PI * 2, false);
 
         if (options.fill) {
             ctx.globalAlpha = options.fillOpacity;

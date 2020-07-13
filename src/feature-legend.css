@@ -1,13 +1,3 @@
-.leaflet-control-feature-legend-icon {
-  position: relative;
-  margin: 0px 3px 0px 4px;
-  top: 2px;
-}
-
-.leaflet-control-feature-legend-title {
-  margin: 3px;
-}
-
 .leaflet-control-feature-legend {
   padding: 6px 10px 6px 6px;
   color: #333;
@@ -15,4 +5,25 @@
   border: 2px solid rgba(0, 0, 0, 0.2);
   border-radius: 5px;
   background-clip: padding-box;
+}
+
+.leaflet-control-feature-legend-title {
+  margin: 3px;
+}
+
+.leaflet-control-feature-legend div {
+  display: table;
+  padding-top: 4px;
+}
+
+.leaflet-control-feature-legend-icon {
+  position: relative;
+  margin: 0px 3px 0px 4px;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.leaflet-control-feature-legend span {
+  vertical-align: middle;
+  display: table-cell;
 }
