@@ -5,22 +5,22 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(myMap);
 
-const blueIcon = L.icon({ iconUrl: 'icons/blue_circle.png', iconSize: [15, 15] });
 const redIcon = L.icon({ iconUrl: 'icons/red_triangle.png', iconSize: [15, 15] });
-const yellowIcon = L.icon({ iconUrl: 'icons/yellow_square.png', iconSize: [15, 15] });
 
-
-L.marker([51.5, -0.09], { icon: blueIcon }).addTo(myMap);
-L.marker([51.52, -0.091], { icon: redIcon }).addTo(myMap);
-L.marker([51.505, -0.115], { icon: yellowIcon }).addTo(myMap);
-
+let defaultMarker = L.marker([51.505, -0.09], {}).addTo(myMap);
+let iconMarker = L.marker([51.505, -0.115], { icon: redIcon }).addTo(myMap);
+let circleMarker = L.circleMarker([51.515, -0.08], { color: 'red' }).addTo(myMap);
+let dotMarker = L.circle([51.494, -0.08], { color: 'red' }).addTo(myMap);
 
 const legend = L.control.featureLegend({
     position: "bottomleft",
     title: "Shapes",
     items: {
-        "Blue circle": { icon: blueIcon, width: 18 },
-        "Red triangle": { icon: redIcon },
-        "Yellow square": { icon: yellowIcon, width: 18 },
-    }
+        "Default marker": defaultMarker,
+        "Icon marker": iconMarker,
+        "Circle marker": circleMarker,
+        "Dot marker": dotMarker,
+    },
+    maxIconSize: 18,
+    minIconSize: 2,
 }).addTo(myMap);
