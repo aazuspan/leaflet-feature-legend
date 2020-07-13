@@ -94,9 +94,10 @@ L.Control.FeatureLegend = L.Control.extend({
     _buildImageIcon: function (container, layer) {
         let itemImg = L.DomUtil.create('img', null, container);
         let icon = layer.getIcon();
+
+        itemImg.onload = () => { this._rescaleIconImage(itemImg) };
         // TODO: Generate default path programatically in case the file name is changed within Leaflet
         itemImg.src = icon instanceof L.Icon.Default ? L.Icon.Default.imagePath + "marker-icon.png" : icon.options.iconUrl;
-        this._rescaleIconImage(itemImg);
     },
 
     // Build the legend icon for a marker without an image icon (such as L.CircleMarker)
@@ -107,33 +108,25 @@ L.Control.FeatureLegend = L.Control.extend({
         this._drawCircle(layer, itemCanvas);
     },
 
-    // Rescale an icon image while maintaining aspect ratio
+    // Rescale an icon image
     _rescaleIconImage: function (itemImg) {
         let maxDimension = Math.max(itemImg.width, itemImg.height);
         let minDimension = Math.min(itemImg.width, itemImg.height);
 
         if (maxDimension > this.options.maxIconSize) {
-            let scaleRatio = this.options.maxIconSize / maxDimension;
-
             if (itemImg.width === maxDimension) {
                 itemImg.width = this.options.maxIconSize;
-                itemImg.height *= scaleRatio;
             }
             else {
                 itemImg.height = this.options.maxIconSize;
-                itemImg.width *= scaleRatio;
             }
         }
         else if (minDimension < this.options.minIconSize) {
-            let scaleRatio = this.options.minIconSize / minDimension;
-
             if (itemImg.width === minDimension) {
                 itemImg.width = this.options.minIconSize;
-                itemImg.height *= scaleRatio;
             }
             else {
                 itemImg.height = this.options.minIconSize;
-                itemImg.width *= scaleRatio;
             }
         }
     },
