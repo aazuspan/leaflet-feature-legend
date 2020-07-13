@@ -5,8 +5,8 @@ Create legends to describe the features in your Leaflet maps.
 <a href="https://aazuspan.github.io/leaflet-feature-legend/demo/index.html"><img src="https://i.imgur.com/XlHaYFE.jpg" title="Interactive demo" /></a>
 
 ## Requirements
-- Features in the legend must be type `L.Marker`, `L.CircleMarker`, or `L.Circle`.
-- This plugin is only tested with Leaflet v1.6.0
+- Features in the legend must be type `L.Marker`, `L.CircleMarker`, or `L.Circle`
+- Only tested with Leaflet v1.6.0
 
 ## Features
 - Support for paths and custom image icons
