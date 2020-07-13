@@ -21,6 +21,6 @@ const legend = L.control.featureLegend({
         "Circle marker": circleMarker,
         "Dot marker": dotMarker,
     },
-    maxIconSize: 18,
-    minIconSize: 2,
+    maxSymbolSize: 18,
+    minSymbolSize: 2,
 }).addTo(myMap);
