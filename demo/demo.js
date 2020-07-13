@@ -7,10 +7,10 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 const redIcon = L.icon({ iconUrl: 'icons/red_triangle.png', iconSize: [15, 15] });
 
-let defaultMarker = L.marker([51.505, -0.09], {}).addTo(myMap);
-let iconMarker = L.marker([51.505, -0.115], { icon: redIcon }).addTo(myMap);
-let circleMarker = L.circleMarker([51.515, -0.08], { color: 'red' }).addTo(myMap);
-let dotMarker = L.circle([51.494, -0.08], { color: 'red' }).addTo(myMap);
+const defaultMarker = L.marker([51.505, -0.09], {}).addTo(myMap);
+const iconMarker = L.marker([51.505, -0.115], { icon: redIcon }).addTo(myMap);
+const circleMarker = L.circleMarker([51.515, -0.08], { color: 'red' }).addTo(myMap);
+const dotMarker = L.circle([51.494, -0.08], { color: 'red' }).addTo(myMap);
 
 const legend = L.control.featureLegend({
     position: "bottomleft",
