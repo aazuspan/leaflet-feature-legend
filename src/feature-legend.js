@@ -10,6 +10,8 @@ L.Control.FeatureLegend = L.Control.extend({
     initialize: function (options) {
         L.Util.setOptions(this, options);
         this._buildContainer();
+        // this.collapse();
+        this.expand();
     },
 
     // Repurposed from Leaflet/Canvas.js to draw paths at a fixed location in the legend
@@ -49,7 +51,13 @@ L.Control.FeatureLegend = L.Control.extend({
     },
 
     _buildContainer: function () {
-        this._container = L.DomUtil.create('div', 'leaflet-control-feature-legend');
+        this._container = L.DomUtil.create('div', 'leaflet-control-feature-legend leaflet-control-layers leaflet-control');
+
+        this._link = L.DomUtil.create('a', 'leaflet-control-feature-legend-toggle', this._container);
+
+        this._link.title = "Legend";
+        this._link.href = "#";
+        this._contents = L.DomUtil.create('section', 'leaflet-control-feature-legend-contents', this._container)
 
         this._buildTitle();
         this._buildItems();
@@ -57,7 +65,7 @@ L.Control.FeatureLegend = L.Control.extend({
 
     _buildTitle: function () {
         if (this.options.title) {
-            let title = L.DomUtil.create('h3', 'leaflet-control-feature-legend-title', this._container);
+            let title = L.DomUtil.create('h3', 'leaflet-control-feature-legend-title', this._contents);
             title.innerText = this.options.title;
         }
     },
@@ -71,7 +79,7 @@ L.Control.FeatureLegend = L.Control.extend({
                     throw new Error(`Error: "${item}" is not a supported marker. Use only L.Marker, L.CircleMarker, or L.Circle.`);
                 }
 
-                let itemDiv = L.DomUtil.create('div', null, this._container);
+                let itemDiv = L.DomUtil.create('div', null, this._contents);
                 let itemSymbol = L.DomUtil.create('i', null, itemDiv);
 
                 // TODO: Clean this up
@@ -139,8 +147,35 @@ L.Control.FeatureLegend = L.Control.extend({
         return false;
     },
 
-    onAdd: function () {
+    onAdd: function (map) {
+        this._map = map;
+
+        // TODO: Set based on property passed
+        this._collapsed = false;
+
+        // TODO: Remove this after testing
+        this._map.on('click', () => {
+            if (this._collapsed) {
+                this.collapse()
+            }
+            else {
+                this.expand();
+            }
+        }
+        )
         return this._container;
+    },
+
+    expand: function () {
+        this._collapsed = !this._collapsed;
+        L.DomUtil.addClass(this._container, 'leaflet-control-feature-legend-expanded');
+        return this;
+    },
+
+    collapse: function () {
+        this._collapsed = !this._collapsed;
+        L.DomUtil.removeClass(this._container, 'leaflet-control-feature-legend-expanded');
+        return this;
     },
 })
 
