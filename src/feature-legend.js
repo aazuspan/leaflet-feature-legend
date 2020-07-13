@@ -72,40 +72,68 @@ L.Control.FeatureLegend = L.Control.extend({
                 }
 
                 let itemDiv = L.DomUtil.create('div', null, this._container);
+                let itemIcon = L.DomUtil.create('i', null, itemDiv);
 
-                let icon = null;
+                // TODO: Clean this up
+                itemIcon.style.width = itemIcon.style.height = this.options.maxIconSize.toString() + "px";
 
-                try {
-                    // TODO: Add support for Leaflet default marker
-                    icon = itemLayer.getIcon();
+                if (itemLayer.options.icon) {
+                    this._buildImageIcon(itemIcon, itemLayer);
                 }
-                catch (error) {
-                }
-
-                // Markers with icons
-                if (icon) {
-                    let itemIcon = L.DomUtil.create('img', 'leaflet-control-feature-legend-icon', itemDiv);
-
-                    try {
-                        itemIcon.src = icon.options.iconUrl;
-                        console.log(itemIcon.src)
-                        itemIcon.width = this.options.maxIconSize;
-                    }
-                    catch (error) {
-                        throw (`Error: "${item}" has an invalid icon. Icons must be type L.Icon.`);
-                    }
-                }
-
-                // Markers without icons
                 else {
-                    let itemCanvas = L.DomUtil.create('canvas', "leaflet-control-feature-legend-icon", itemDiv);
-                    itemCanvas.height = this.options.maxIconSize;
-                    itemCanvas.width = this.options.maxIconSize;
-                    this._drawCircle(itemLayer, itemCanvas);
+                    this._buildMarkerIcon(itemIcon, itemLayer);
                 }
 
                 let itemTitle = L.DomUtil.create('span', '', itemDiv);
                 itemTitle.innerText = item;
+            }
+        }
+    },
+
+    // Build the legend icon for a marker with an image icon (such as L.Marker)
+    _buildImageIcon: function (container, layer) {
+        let itemImg = L.DomUtil.create('img', null, container);
+        let icon = layer.getIcon();
+        // TODO: Generate default path programatically in case the file name is changed within Leaflet
+        itemImg.src = icon instanceof L.Icon.Default ? L.Icon.Default.imagePath + "marker-icon.png" : icon.options.iconUrl;
+        this._rescaleIconImage(itemImg);
+    },
+
+    // Build the legend icon for a marker without an image icon (such as L.CircleMarker)
+    _buildMarkerIcon: function (container, layer) {
+        let itemCanvas = L.DomUtil.create('canvas', null, container);
+        itemCanvas.height = this.options.maxIconSize;
+        itemCanvas.width = this.options.maxIconSize;
+        this._drawCircle(layer, itemCanvas);
+    },
+
+    // Rescale an icon image while maintaining aspect ratio
+    _rescaleIconImage: function (itemImg) {
+        let maxDimension = Math.max(itemImg.width, itemImg.height);
+        let minDimension = Math.min(itemImg.width, itemImg.height);
+
+        if (maxDimension > this.options.maxIconSize) {
+            let scaleRatio = this.options.maxIconSize / maxDimension;
+
+            if (itemImg.width === maxDimension) {
+                itemImg.width = this.options.maxIconSize;
+                itemImg.height *= scaleRatio;
+            }
+            else {
+                itemImg.height = this.options.maxIconSize;
+                itemImg.width *= scaleRatio;
+            }
+        }
+        else if (minDimension < this.options.minIconSize) {
+            let scaleRatio = this.options.minIconSize / minDimension;
+
+            if (itemImg.width === minDimension) {
+                itemImg.width = this.options.minIconSize;
+                itemImg.height *= scaleRatio;
+            }
+            else {
+                itemImg.height = this.options.minIconSize;
+                itemImg.width *= scaleRatio;
             }
         }
     },

@@ -13,17 +13,15 @@
 
 .leaflet-control-feature-legend div {
   display: table;
-  padding-top: 4px;
-}
-
-.leaflet-control-feature-legend-icon {
-  position: relative;
-  margin: 0px 3px 0px 4px;
-  display: table-cell;
-  vertical-align: middle;
 }
 
 .leaflet-control-feature-legend span {
   vertical-align: middle;
   display: table-cell;
+}
+
+.leaflet-control-feature-legend i {
+  text-align: center;
+  display: inline-block;
+  padding: 0px 3px 0px 4px;
 }
