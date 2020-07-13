@@ -3,8 +3,8 @@ L.Control.FeatureLegend = L.Control.extend({
         position: 'topleft',
         title: 'Legend',
         items: {},
-        maxIconSize: 18,
-        minIconSize: 1
+        maxSymbolSize: 18,
+        minSymbolSize: 1
     },
 
     initialize: function (options) {
@@ -23,8 +23,8 @@ L.Control.FeatureLegend = L.Control.extend({
             radiusOffset = options.weight;
         }
 
-        let r = Math.max(Math.min(Math.round(layer._radius), (this.options.maxIconSize - radiusOffset) / 2), this.options.minIconSize);
-        let x = this.options.maxIconSize / 2;
+        let r = Math.max(Math.min(Math.round(layer._radius), (this.options.maxSymbolSize - radiusOffset) / 2), this.options.minSymbolSize);
+        let x = this.options.maxSymbolSize / 2;
 
         ctx.beginPath();
         ctx.arc(x, x, r, 0, Math.PI * 2, false);
@@ -72,61 +72,61 @@ L.Control.FeatureLegend = L.Control.extend({
                 }
 
                 let itemDiv = L.DomUtil.create('div', null, this._container);
-                let itemIcon = L.DomUtil.create('i', null, itemDiv);
+                let itemSymbol = L.DomUtil.create('i', null, itemDiv);
 
                 // TODO: Clean this up
-                itemIcon.style.width = itemIcon.style.height = this.options.maxIconSize.toString() + "px";
+                itemSymbol.style.width = itemSymbol.style.height = this.options.maxSymbolSize.toString() + "px";
 
                 if (itemLayer.options.icon) {
-                    this._buildImageIcon(itemIcon, itemLayer);
+                    this._buildImageSymbol(itemSymbol, itemLayer);
                 }
                 else {
-                    this._buildMarkerIcon(itemIcon, itemLayer);
+                    this._buildMarkerSymbol(itemSymbol, itemLayer);
                 }
 
-                let itemTitle = L.DomUtil.create('span', '', itemDiv);
+                let itemTitle = L.DomUtil.create('span', null, itemDiv);
                 itemTitle.innerText = item;
             }
         }
     },
 
-    // Build the legend icon for a marker with an image icon (such as L.Marker)
-    _buildImageIcon: function (container, layer) {
+    // Build the legend symbol for a marker with an image icon (such as L.Marker)
+    _buildImageSymbol: function (container, layer) {
         let itemImg = L.DomUtil.create('img', null, container);
         let icon = layer.getIcon();
 
-        itemImg.onload = () => { this._rescaleIconImage(itemImg) };
+        itemImg.onload = () => { this._rescaleSymbolImage(itemImg) };
         // TODO: Generate default path programatically in case the file name is changed within Leaflet
         itemImg.src = icon instanceof L.Icon.Default ? L.Icon.Default.imagePath + "marker-icon.png" : icon.options.iconUrl;
     },
 
     // Build the legend icon for a marker without an image icon (such as L.CircleMarker)
-    _buildMarkerIcon: function (container, layer) {
+    _buildMarkerSymbol: function (container, layer) {
         let itemCanvas = L.DomUtil.create('canvas', null, container);
-        itemCanvas.height = this.options.maxIconSize;
-        itemCanvas.width = this.options.maxIconSize;
+        itemCanvas.height = this.options.maxSymbolSize;
+        itemCanvas.width = this.options.maxSymbolSize;
         this._drawCircle(layer, itemCanvas);
     },
 
     // Rescale an icon image
-    _rescaleIconImage: function (itemImg) {
+    _rescaleSymbolImage: function (itemImg) {
         let maxDimension = Math.max(itemImg.width, itemImg.height);
         let minDimension = Math.min(itemImg.width, itemImg.height);
 
-        if (maxDimension > this.options.maxIconSize) {
+        if (maxDimension > this.options.maxSymbolSize) {
             if (itemImg.width === maxDimension) {
-                itemImg.width = this.options.maxIconSize;
+                itemImg.width = this.options.maxSymbolSize;
             }
             else {
-                itemImg.height = this.options.maxIconSize;
+                itemImg.height = this.options.maxSymbolSize;
             }
         }
-        else if (minDimension < this.options.minIconSize) {
+        else if (minDimension < this.options.minSymbolSize) {
             if (itemImg.width === minDimension) {
-                itemImg.width = this.options.minIconSize;
+                itemImg.width = this.options.minSymbolSize;
             }
             else {
-                itemImg.height = this.options.minIconSize;
+                itemImg.height = this.options.minSymbolSize;
             }
         }
     },
