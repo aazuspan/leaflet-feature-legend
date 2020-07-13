@@ -13,8 +13,8 @@ L.Control.FeatureLegend = L.Control.extend({
     },
 
     // Repurposed from Leaflet/Canvas.js to draw paths at a fixed location in the legend
-    _drawCircle: function (layer) {
-        const ctx = this._canvas.getContext('2d');
+    _drawCircle: function (layer, workingCanvas) {
+        const ctx = workingCanvas.getContext('2d');
         let options = layer.options;
 
         let radiusOffset = 0;
@@ -98,10 +98,10 @@ L.Control.FeatureLegend = L.Control.extend({
 
                 // Markers without icons
                 else {
-                    this._canvas = L.DomUtil.create('canvas', "leaflet-control-feature-legend-icon", itemDiv);
-                    this._canvas.height = this.options.maxIconSize;
-                    this._canvas.width = this.options.maxIconSize;
-                    this._drawCircle(itemLayer);
+                    let itemCanvas = L.DomUtil.create('canvas', "leaflet-control-feature-legend-icon", itemDiv);
+                    itemCanvas.height = this.options.maxIconSize;
+                    itemCanvas.width = this.options.maxIconSize;
+                    this._drawCircle(itemLayer, itemCanvas);
                 }
 
                 let itemTitle = L.DomUtil.create('span', '', itemDiv);
