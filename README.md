@@ -1,15 +1,23 @@
 # leaflet-feature-legend
 Create legends to describe the features in your Leaflet maps.
 
-# Requirements
+## Demo
+<a href="https://aazuspan.github.io/leaflet-feature-legend/demo/index.html"><img src="https://i.imgur.com/XlHaYFE.jpg" title="Interactive demo" /></a>
+
+## Requirements
 - Features in the legend must be type `L.Marker`, `L.CircleMarker`, or `L.Circle`.
 - This plugin is only tested with Leaflet v1.6.0
 
-### Features
+## Features
 - Support for paths and custom image icons
 - Symbols are automatically sized, but can be restricted to maximum and minimum sizes
 
-### Usage
+## API
+```
+legend = L.control.featureLegend(options);
+```
+
+### Example usage
 ```
 // Build the features that will be included in the legend
 const customIcon = L.icon({ iconUrl: 'icons/red_triangle.png', iconSize: [15, 15] });
@@ -28,21 +36,14 @@ const legend = L.control.featureLegend({
         "Circle marker": circleMarker,
         "Dot marker": dotMarker,
     },
-    maxIconSize: 18,
-    minIconSize: 2,
+    maxSymbolSize: 18,
+    minSymbolSize: 2,
 }).addTo(myMap);
 ```
-### Demo
-<a href="https://aazuspan.github.io/leaflet-feature-legend/demo/index.html"><img src="https://i.imgur.com/XlHaYFE.jpg" title="Interactive demo" /></a>
 
-### API
-```
-legend = L.control.featureLegend(options);
-```
-
-#### Options
+### Options
 `position`: Position of the legend. Default is `topright`. See L.Control in Leaflet documentation.<br/>
 `title`: Title of the legend that will be displayed. Default is 'Legend'. To remove the title, set to `null` or empty string.<br/>
 `items`: Object with feature labels as keys and feature layers as values.<br/>
-`maxIconSize`: Maximum size, in pixels, of any dimension of an icon to display in the legend. Icons larger than this will be shrunk to this size. Default is 18.<br/>
-`minIconSize`: Minimum size, in pixels, of any dimension of an icon to display in the legend. Icons smaller than this will be enlarged to this size. Default is 1.<br/>
+`maxSymbolSize`: Maximum size, in pixels, of any dimension of a symbol to display in the legend. Larger symbols will be shrunk to this size. Default is 18.<br/>
+`minSymbolSize`: Minimum size, in pixels, of any dimension of a symbol to display in the legend. Smaller symbols will be enlarged to this size. Default is 1.<br/>
