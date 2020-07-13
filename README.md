@@ -1,27 +1,27 @@
 # leaflet-feature-legend
-A Leaflet plugin for creating legends of features.
+A Leaflet plugin for creating legends of features. Currently, this plugin supports L.Marker (with default or custom image icons), L.CircleMarker, and L.Circle layers.
 
 ### Example
 ```
-// Leaflet icons are used to create the legend
-const blueIcon = L.icon({ iconUrl: 'icons/blue_circle.png', iconSize: [15, 15] });
-const redIcon = L.icon({ iconUrl: 'icons/red_triangle.png', iconSize: [15, 15] });
-const yellowIcon = L.icon({ iconUrl: 'icons/yellow_square.png', iconSize: [15, 15] });
+const customIcon = L.icon({ iconUrl: 'icons/red_triangle.png', iconSize: [15, 15] });
 
-L.marker([51.5, -0.09], { icon: blueIcon }).addTo(myMap);
-L.marker([51.52, -0.091], { icon: redIcon }).addTo(myMap);
-L.marker([51.505, -0.115], { icon: yellowIcon }).addTo(myMap);
+const defaultMarker = L.marker([51.505, -0.09], {}).addTo(myMap);
+const iconMarker = L.marker([51.505, -0.115], { icon: customIcon }).addTo(myMap);
+const circleMarker = L.circleMarker([51.515, -0.08], { color: 'red' }).addTo(myMap);
+const dotMarker = L.circle([51.494, -0.08], { color: 'red' }).addTo(myMap);
 
-// Create your custom legend here
 const legend = L.control.featureLegend({
     position: "bottomleft",
     title: "Shapes",
     items: {
-        "Blue circle": { icon: blueIcon, width: 18 },
-        "Red triangle": { icon: redIcon },
-        "Yellow square": { icon: yellowIcon, width: 18 },
-    }
+        "Default marker": defaultMarker,
+        "Icon marker": iconMarker,
+        "Circle marker": circleMarker,
+        "Dot marker": dotMarker,
+    },
+    maxIconSize: 18,
+    minIconSize: 2,
 }).addTo(myMap);
 ```
-<a href="https://aazuspan.github.io/leaflet-feature-legend/demo/index.html"><img src="https://i.imgur.com/UIgLgko.jpg" title="Interactive demo" /></a>
+<a href="https://aazuspan.github.io/leaflet-feature-legend/demo/index.html"><img src="https://i.imgur.com/XlHaYFE.jpg" title="Interactive demo" /></a>
 
