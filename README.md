@@ -10,6 +10,7 @@ Create legends to describe the features in your Leaflet maps.
 
 ## Features
 - Support for paths and custom image icons
+- Collapsible control
 - Symbols are automatically sized, but can be restricted to maximum and minimum sizes
 
 ## API
@@ -38,12 +39,14 @@ const legend = L.control.featureLegend({
     },
     maxSymbolSize: 18,
     minSymbolSize: 2,
+    collapsed: true,
 }).addTo(myMap);
 ```
 
 ### Options
 `position`: Position of the legend. Default is `topright`. See L.Control in Leaflet documentation.<br/>
-`title`: Title of the legend that will be displayed. Default is 'Legend'. To remove the title, set to `null` or empty string.<br/>
+`title`: Title of the legend that will be displayed. Default is `Legend`. To remove the title, set to `null` or empty string.<br/>
 `items`: Object with feature labels as keys and feature layers as values.<br/>
-`maxSymbolSize`: Maximum size, in pixels, of any dimension of a symbol to display in the legend. Larger symbols will be shrunk to this size. Default is 18.<br/>
-`minSymbolSize`: Minimum size, in pixels, of any dimension of a symbol to display in the legend. Smaller symbols will be enlarged to this size. Default is 1.<br/>
+`maxSymbolSize`: Maximum size, in pixels, of any dimension of a symbol to display in the legend. Larger symbols will be shrunk to this size. Default is `18`.<br/>
+`minSymbolSize`: Minimum size, in pixels, of any dimension of a symbol to display in the legend. Smaller symbols will be enlarged to this size. Default is `1`.<br/>
+`collapsed`: If true, the legend will be collapsed into an icon and expanded on mouse hover. Default is `false`.
