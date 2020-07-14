@@ -4,12 +4,30 @@ L.Control.FeatureLegend = L.Control.extend({
         title: 'Legend',
         items: {},
         maxSymbolSize: 18,
-        minSymbolSize: 1
+        minSymbolSize: 1,
+        collapsed: false,
     },
 
     initialize: function (options) {
         L.Util.setOptions(this, options);
         this._buildContainer();
+    },
+
+    _initLayout: function () {
+        L.DomEvent.disableClickPropagation(this._container);
+        L.DomEvent.disableScrollPropagation(this._container);
+
+        if (this.options.collapsed) {
+            this._map.on('click', this.collapse, this);
+
+            L.DomEvent.on(this._container, {
+                mouseenter: this.expand,
+                mouseleave: this.collapse
+            }, this);
+        }
+        else {
+            this.expand();
+        }
     },
 
     // Repurposed from Leaflet/Canvas.js to draw paths at a fixed location in the legend
@@ -49,7 +67,12 @@ L.Control.FeatureLegend = L.Control.extend({
     },
 
     _buildContainer: function () {
-        this._container = L.DomUtil.create('div', 'leaflet-control-feature-legend');
+        this._container = L.DomUtil.create('div', 'leaflet-control-feature-legend leaflet-bar leaflet-control');
+
+        this._contents = L.DomUtil.create('section', 'leaflet-control-feature-legend-contents', this._container)
+        this._link = L.DomUtil.create('a', 'leaflet-control-feature-legend-toggle leaflet-control-layers', this._container);
+        this._link.title = "Legend";
+        this._link.href = "#";
 
         this._buildTitle();
         this._buildItems();
@@ -57,7 +80,7 @@ L.Control.FeatureLegend = L.Control.extend({
 
     _buildTitle: function () {
         if (this.options.title) {
-            let title = L.DomUtil.create('h3', 'leaflet-control-feature-legend-title', this._container);
+            let title = L.DomUtil.create('h3', 'leaflet-control-feature-legend-title', this._contents);
             title.innerText = this.options.title;
         }
     },
@@ -71,7 +94,7 @@ L.Control.FeatureLegend = L.Control.extend({
                     throw new Error(`Error: "${item}" is not a supported marker. Use only L.Marker, L.CircleMarker, or L.Circle.`);
                 }
 
-                let itemDiv = L.DomUtil.create('div', null, this._container);
+                let itemDiv = L.DomUtil.create('div', null, this._contents);
                 let itemSymbol = L.DomUtil.create('i', null, itemDiv);
 
                 // TODO: Clean this up
@@ -139,8 +162,22 @@ L.Control.FeatureLegend = L.Control.extend({
         return false;
     },
 
-    onAdd: function () {
+    onAdd: function (map) {
+        this._map = map;
+        this._initLayout();
         return this._container;
+    },
+
+    expand: function () {
+        this._link.style.display = "none";
+        L.DomUtil.addClass(this._container, 'leaflet-control-feature-legend-expanded');
+        return this;
+    },
+
+    collapse: function () {
+        this._link.style.display = "block";
+        L.DomUtil.removeClass(this._container, 'leaflet-control-feature-legend-expanded');
+        return this;
     },
 })
 
