@@ -14,12 +14,10 @@ L.Control.FeatureLegend = L.Control.extend({
     },
 
     _initLayout: function () {
-        this._collapsed = this.options.collapsed;
-
         L.DomEvent.disableClickPropagation(this._container);
         L.DomEvent.disableScrollPropagation(this._container);
 
-        if (this._collapsed) {
+        if (this.options.collapsed) {
             this._map.on('click', this.collapse, this);
 
             L.DomEvent.on(this._container, {
@@ -171,14 +169,12 @@ L.Control.FeatureLegend = L.Control.extend({
     },
 
     expand: function () {
-        this._collapsed = !this._collapsed;
         this._link.style.display = "none";
         L.DomUtil.addClass(this._container, 'leaflet-control-feature-legend-expanded');
         return this;
     },
 
     collapse: function () {
-        this._collapsed = !this._collapsed;
         this._link.style.display = "block";
         L.DomUtil.removeClass(this._container, 'leaflet-control-feature-legend-expanded');
         return this;
