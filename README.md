@@ -53,14 +53,14 @@ const legend = L.control.featureLegend(items, {
     collapsed: true,
 }).addTo(myMap);
 ```
-[Legend items](#items)
+
 ## API
 ```
 legend = L.control.featureLegend(items, options?);
 ```
 
 ### Items
-- `items` is an object representing the layers that will be included in the legend. 
+- `items` is an `object` representing the layers that will be included in the legend. 
 - Each property in `items` represents a feature, and should include the feature's label and a layer from which the feature's symbol will be generated.
   - Supported layer types are `L.Marker`, `L.CircleMarker`, or `L.Circle`. 
 - Layers do not need to be added to the map to be included in the legend, so you can create dummy layers to represent a layer type.
