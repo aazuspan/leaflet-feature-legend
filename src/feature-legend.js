@@ -10,8 +10,7 @@ L.Control.FeatureLegend = L.Control.extend({
     initialize: function (options) {
         L.Util.setOptions(this, options);
         this._buildContainer();
-        // this.collapse();
-        this.expand();
+        this.collapse();
     },
 
     // Repurposed from Leaflet/Canvas.js to draw paths at a fixed location in the legend
@@ -51,13 +50,12 @@ L.Control.FeatureLegend = L.Control.extend({
     },
 
     _buildContainer: function () {
-        this._container = L.DomUtil.create('div', 'leaflet-control-feature-legend leaflet-control-layers leaflet-control');
+        this._container = L.DomUtil.create('div', 'leaflet-control-feature-legend leaflet-bar leaflet-control');
 
-        this._link = L.DomUtil.create('a', 'leaflet-control-feature-legend-toggle', this._container);
-
+        this._contents = L.DomUtil.create('section', 'leaflet-control-feature-legend-contents', this._container)
+        this._link = L.DomUtil.create('a', 'leaflet-control-feature-legend-toggle leaflet-control-layers', this._container);
         this._link.title = "Legend";
         this._link.href = "#";
-        this._contents = L.DomUtil.create('section', 'leaflet-control-feature-legend-contents', this._container)
 
         this._buildTitle();
         this._buildItems();

@@ -1,3 +1,7 @@
+.leaflet-control-feature-legend {
+  background-color: white;
+}
+
 .leaflet-control-feature-legend-title {
   margin: 3px;
 }
@@ -21,11 +25,7 @@
   background-image: url("../assets/legend-icon-small.png");
   background-repeat: no-repeat;
   background-position: 50% 50%;
-  
-  width: 26px;
-  height: 26px;
-  box-sizing: border-box;
-  display: block;
+  box-shadow: none;
 }
 
 .leaflet-control-feature-legend-expanded .leaflet-control-feature-legend-toggle {
