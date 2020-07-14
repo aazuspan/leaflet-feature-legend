@@ -1,10 +1,5 @@
 .leaflet-control-feature-legend {
-  padding: 6px 10px 6px 6px;
-  color: #333;
-  background: #fff;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-  background-clip: padding-box;
+  background-color: white;
 }
 
 .leaflet-control-feature-legend-title {
@@ -25,3 +20,20 @@
   display: inline-block;
   padding: 0px 3px 0px 4px;
 }
+
+.leaflet-control-feature-legend-toggle {
+  background-image: url("../assets/legend-icon.png");
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  box-shadow: none;
+}
+
+.leaflet-control-feature-legend-contents {
+  display: none;
+}
+
+.leaflet-control-feature-legend-expanded .leaflet-control-feature-legend-contents {
+  display: block;
+  padding: 6px 10px 6px 6px;
+}
+
