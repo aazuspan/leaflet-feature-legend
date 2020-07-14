@@ -12,15 +12,16 @@ const iconMarker = L.marker([51.505, -0.115], { icon: redIcon }).addTo(myMap);
 const circleMarker = L.circleMarker([51.515, -0.08], { color: 'red' }).addTo(myMap);
 const dotMarker = L.circle([51.494, -0.08], { color: 'red' }).addTo(myMap);
 
-const legend = L.control.featureLegend({
+const items = {
+    "Default marker": defaultMarker,
+    "Icon marker": iconMarker,
+    "Circle marker": circleMarker,
+    "Dot marker": dotMarker,
+};
+
+const legend = L.control.featureLegend(items, {
     position: "bottomleft",
     title: "Shapes",
-    items: {
-        "Default marker": defaultMarker,
-        "Icon marker": iconMarker,
-        "Circle marker": circleMarker,
-        "Dot marker": dotMarker,
-    },
     maxSymbolSize: 18,
     minSymbolSize: 2,
     collapsed: true,
