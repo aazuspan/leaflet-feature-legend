@@ -2,14 +2,15 @@ L.Control.FeatureLegend = L.Control.extend({
     options: {
         position: 'topleft',
         title: 'Legend',
-        items: {},
         maxSymbolSize: 18,
         minSymbolSize: 1,
         collapsed: false,
     },
 
-    initialize: function (options) {
+    initialize: function (items, options) {
+        this.items = items;
         L.Util.setOptions(this, options);
+
         this._buildContainer();
     },
 
@@ -86,30 +87,27 @@ L.Control.FeatureLegend = L.Control.extend({
     },
 
     _buildItems: function () {
-        if (this.options.items) {
-            for (let item in this.options.items) {
-                let itemLayer = this.options.items[item];
+        for (let item in this.items) {
+            let itemLayer = this.items[item];
 
-                if (!this._layerIsSupported(itemLayer)) {
-                    throw new Error(`Error: "${item}" is not a supported marker. Use only L.Marker, L.CircleMarker, or L.Circle.`);
-                }
-
-                let itemDiv = L.DomUtil.create('div', null, this._contents);
-                let itemSymbol = L.DomUtil.create('i', null, itemDiv);
-
-                // TODO: Clean this up
-                itemSymbol.style.width = itemSymbol.style.height = this.options.maxSymbolSize.toString() + "px";
-
-                if (itemLayer.options.icon) {
-                    this._buildImageSymbol(itemSymbol, itemLayer);
-                }
-                else {
-                    this._buildMarkerSymbol(itemSymbol, itemLayer);
-                }
-
-                let itemTitle = L.DomUtil.create('span', null, itemDiv);
-                itemTitle.innerText = item;
+            if (!this._layerIsSupported(itemLayer)) {
+                throw new Error(`Error: "${item}" is not a supported layer. Use only L.Marker, L.CircleMarker, or L.Circle.`);
             }
+
+            let itemDiv = L.DomUtil.create('div', null, this._contents);
+            let itemSymbol = L.DomUtil.create('i', null, itemDiv);
+
+            itemSymbol.style.width = itemSymbol.style.height = this.options.maxSymbolSize.toString() + "px";
+
+            if (itemLayer.options.icon) {
+                this._buildImageSymbol(itemSymbol, itemLayer);
+            }
+            else {
+                this._buildMarkerSymbol(itemSymbol, itemLayer);
+            }
+
+            let itemTitle = L.DomUtil.create('span', null, itemDiv);
+            itemTitle.innerText = item;
         }
     },
 
@@ -182,6 +180,6 @@ L.Control.FeatureLegend = L.Control.extend({
 })
 
 
-L.control.featureLegend = function (options) {
-    return new L.Control.FeatureLegend(options);
+L.control.featureLegend = function (items, options) {
+    return new L.Control.FeatureLegend(items, options);
 };
