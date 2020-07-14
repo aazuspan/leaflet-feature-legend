@@ -22,7 +22,7 @@
 }
 
 .leaflet-control-feature-legend-toggle {
-  background-image: url("../assets/legend-icon-small.png");
+  background-image: url("../assets/legend-icon.png");
   background-repeat: no-repeat;
   background-position: 50% 50%;
   box-shadow: none;
