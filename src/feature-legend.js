@@ -4,13 +4,32 @@ L.Control.FeatureLegend = L.Control.extend({
         title: 'Legend',
         items: {},
         maxSymbolSize: 18,
-        minSymbolSize: 1
+        minSymbolSize: 1,
+        collapsed: false,
     },
 
     initialize: function (options) {
         L.Util.setOptions(this, options);
         this._buildContainer();
-        this.collapse();
+    },
+
+    _initLayout: function () {
+        this._collapsed = this.options.collapsed;
+
+        L.DomEvent.disableClickPropagation(this._container);
+        L.DomEvent.disableScrollPropagation(this._container);
+
+        if (this._collapsed) {
+            this._map.on('click', this.collapse, this);
+
+            L.DomEvent.on(this._container, {
+                mouseenter: this.expand,
+                mouseleave: this.collapse
+            }, this);
+        }
+        else {
+            this.expand();
+        }
     },
 
     // Repurposed from Leaflet/Canvas.js to draw paths at a fixed location in the legend
@@ -147,31 +166,20 @@ L.Control.FeatureLegend = L.Control.extend({
 
     onAdd: function (map) {
         this._map = map;
-
-        // TODO: Set based on property passed
-        this._collapsed = false;
-
-        // TODO: Remove this after testing
-        this._map.on('click', () => {
-            if (this._collapsed) {
-                this.collapse()
-            }
-            else {
-                this.expand();
-            }
-        }
-        )
+        this._initLayout();
         return this._container;
     },
 
     expand: function () {
         this._collapsed = !this._collapsed;
+        this._link.style.display = "none";
         L.DomUtil.addClass(this._container, 'leaflet-control-feature-legend-expanded');
         return this;
     },
 
     collapse: function () {
         this._collapsed = !this._collapsed;
+        this._link.style.display = "block";
         L.DomUtil.removeClass(this._container, 'leaflet-control-feature-legend-expanded');
         return this;
     },

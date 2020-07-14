@@ -28,10 +28,6 @@
   box-shadow: none;
 }
 
-.leaflet-control-feature-legend-expanded .leaflet-control-feature-legend-toggle {
-  display: none;
-}
-
 .leaflet-control-feature-legend-contents {
   display: none;
 }
