@@ -71,7 +71,7 @@ const legend = L.control.featureLegend(items, {
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| position | String | 'topright' | Position of the legend. Possible values are 'topleft', 'topright', 'bottomleft', or 'bottomright'. |
+| position | String | 'topleft' | Position of the legend. Possible values are 'topleft', 'topright', 'bottomleft', or 'bottomright'. |
 | title | String | 'Legend' | Title of the legend that will be displayed. To remove the title, set to `null` or empty string. |
 | maxSymbolSize | Number | 18 | Maximum size, in pixels, of any dimension of a symbol to display in the legend. Larger symbols will be scaled to this size. |
 | minSymbolSize | Number | 1 | Minimum size, in pixels, of any dimension of a symbol to display in the legend. Smaller symbols will be scaled to this size. |
