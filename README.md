@@ -2,7 +2,7 @@
 Create legends to describe the features in your Leaflet maps.
 
 ## Demo
-<a href="https://aazuspan.github.io/leaflet-feature-legend/demo/index.html"><img src="https://i.imgur.com/XlHaYFE.jpg" title="Interactive demo" /></a>
+<a href="https://aazuspan.github.io/leaflet-feature-legend/demo/index.html"><img src="https://raw.githubusercontent.com/aazuspan/leaflet-feature-legend/master/demo/example.jpg" title="Interactive demo" /></a>
 
 ## Requirements
 - Tested with Leaflet v1.6.0
@@ -51,6 +51,7 @@ const legend = L.control.featureLegend(items, {
     maxSymbolSize: 18,
     minSymbolSize: 2,
     collapsed: true,
+    drawShadows: true,
 }).addTo(myMap);
 ```
 
@@ -71,4 +72,5 @@ legend = L.control.featureLegend(items, options?);
 `title`: Title of the legend that will be displayed. Default is `Legend`. To remove the title, set to `null` or empty string.<br/>
 `maxSymbolSize`: Maximum size, in pixels, of any dimension of a symbol to display in the legend. Larger symbols will be shrunk to this size. Default is `18`.<br/>
 `minSymbolSize`: Minimum size, in pixels, of any dimension of a symbol to display in the legend. Smaller symbols will be enlarged to this size. Default is `1`.<br/>
-`collapsed`: If true, the legend will be collapsed into an icon and expanded on mouse hover. Default is `false`. <br/>
+`collapsed`: If `true`, the legend will be collapsed into an icon and expanded on mouse hover. Default is `false`. <br/>
+`drawShadows`: If `true`, any layers using an `L.Icon` with a defined `shadowUrl` will include the shadow in the legend symbol. Default is `false`. <br/>
