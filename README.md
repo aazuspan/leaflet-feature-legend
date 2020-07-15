@@ -30,7 +30,6 @@ const customIcon = L.icon({ iconUrl: 'icons/red_triangle.png', iconSize: [15, 15
 const defaultMarker = L.marker([51.505, -0.09], {}).addTo(myMap);
 const iconMarker = L.marker([51.505, -0.115], { icon: customIcon }).addTo(myMap);
 const circleMarker = L.circleMarker([51.515, -0.08], { color: 'red' }).addTo(myMap);
-const dotMarker = L.circle([51.494, -0.08], { color: 'red' }).addTo(myMap);
 ```
 
 4. Create the `items` object that will be included in the legend
@@ -39,7 +38,6 @@ const items = {
     "Default marker": defaultMarker,
     "Icon marker": iconMarker,
     "Circle marker": circleMarker,
-    "Dot marker": dotMarker,
 };
 ```
 
@@ -73,4 +71,4 @@ legend = L.control.featureLegend(items, options?);
 `maxSymbolSize`: Maximum size, in pixels, of any dimension of a symbol to display in the legend. Larger symbols will be shrunk to this size. Default is `18`.<br/>
 `minSymbolSize`: Minimum size, in pixels, of any dimension of a symbol to display in the legend. Smaller symbols will be enlarged to this size. Default is `1`.<br/>
 `collapsed`: If `true`, the legend will be collapsed into an icon and expanded on mouse hover. Default is `false`. <br/>
-`drawShadows`: If `true`, any layers using an `L.Icon` with a defined `shadowUrl` will include the shadow in the legend symbol. Default is `false`. <br/>
+`drawShadows`: If `true`, any layers using an `L.Icon` with a defined `shadowUrl` (such as the default `L.Icon`) will include the shadow in the legend symbol. Default is `false`. <br/>
