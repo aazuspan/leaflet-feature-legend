@@ -53,10 +53,12 @@ const legend = L.control.featureLegend(items, {
 }).addTo(myMap);
 ```
 
-## API
-```
-legend = L.control.featureLegend(items, options?);
-```
+## L.Control.FeatureLegend
+
+### Creation
+| Factory | Description |
+| :--- | :--- |
+| L.control.featureLegend(`items`, `options?`) | Creates a legend of the given items with any selected options. |
 
 ### Items
 - `items` is an `object` representing the layers that will be included in the legend. 
@@ -66,9 +68,18 @@ legend = L.control.featureLegend(items, options?);
   - For example, if your markers are built using an unsupported layer type like `L.GeoJSON`, you can create an `L.Marker` with the same icon to include in the legend.
 
 ### Options
-`position`: Position of the legend. Default is `topright`. See L.Control in Leaflet documentation.<br/>
-`title`: Title of the legend that will be displayed. Default is `Legend`. To remove the title, set to `null` or empty string.<br/>
-`maxSymbolSize`: Maximum size, in pixels, of any dimension of a symbol to display in the legend. Larger symbols will be shrunk to this size. Default is `18`.<br/>
-`minSymbolSize`: Minimum size, in pixels, of any dimension of a symbol to display in the legend. Smaller symbols will be enlarged to this size. Default is `1`.<br/>
-`collapsed`: If `true`, the legend will be collapsed into an icon and expanded on mouse hover. Default is `false`. <br/>
-`drawShadows`: If `true`, any layers using an `L.Icon` with a defined `shadowUrl` (such as the default `L.Icon`) will include the shadow in the legend symbol. Default is `false`. <br/>
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| position | String | 'topright' | Position of the legend. Possible values are 'topleft', 'topright', 'bottomleft', or 'bottomright'. |
+| title | String | 'Legend' | Title of the legend that will be displayed. To remove the title, set to `null` or empty string. |
+| maxSymbolSize | Number | 18 | Maximum size, in pixels, of any dimension of a symbol to display in the legend. Larger symbols will be scaled to this size. |
+| minSymbolSize | Number | 18 | Minimum size, in pixels, of any dimension of a symbol to display in the legend. Smaller symbols will be scaled to this size. |
+| collapsed | Boolean | false | If `true`, the legend will be collapsed into an icon and expanded on mouse hover. |
+| drawShadows | Boolean | false | If `true`, layers using an `L.Icon` with a defined `shadowUrl` (such as the default `L.Icon`) will include the shadow in the legend symbol. |
+
+### Methods
+| Method | Returns | Description |
+| :--- | :--- | :--- |
+| expand() | `null` | Expand the legend container if collapsed |
+| collapse() | `null` | Collapse the legend container if expanded |
