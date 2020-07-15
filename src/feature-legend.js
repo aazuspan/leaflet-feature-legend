@@ -33,42 +33,6 @@ L.Control.FeatureLegend = L.Control.extend({
         }
     },
 
-    // Repurposed from Leaflet/Canvas.js to draw paths at a fixed location in the legend
-    _drawCircle: function (layer, workingCanvas) {
-        const ctx = workingCanvas.getContext('2d');
-        let options = layer.options;
-
-        let radiusOffset = 0;
-
-        if (options.stroke && options.weight !== 0) {
-            radiusOffset = options.weight;
-        }
-
-        let r = Math.max(Math.min(Math.round(layer._radius), (this.options.maxSymbolSize - radiusOffset) / 2), this.options.minSymbolSize);
-        let x = this.options.maxSymbolSize / 2;
-
-        ctx.beginPath();
-        ctx.arc(x, x, r, 0, Math.PI * 2, false);
-
-        if (options.fill) {
-            ctx.globalAlpha = options.fillOpacity;
-            ctx.fillStyle = options.fillColor || options.color;
-            ctx.fill(options.fillRule || 'evenodd');
-        }
-
-        if (options.stroke && options.weight !== 0) {
-            if (ctx.setLineDash) {
-                ctx.setLineDash(layer.options && layer.options._dashArray || []);
-            }
-            ctx.globalAlpha = options.opacity;
-            ctx.lineWidth = options.weight;
-            ctx.strokeStyle = options.color;
-            ctx.lineCap = options.lineCap;
-            ctx.lineJoin = options.lineJoin;
-            ctx.stroke();
-        }
-    },
-
     _buildContainer: function () {
         this._container = L.DomUtil.create('div', 'leaflet-control-feature-legend leaflet-bar leaflet-control');
 
@@ -102,28 +66,15 @@ L.Control.FeatureLegend = L.Control.extend({
             itemSymbol.style.width = itemSymbol.style.height = this.options.maxSymbolSize.toString() + "px";
 
             if (itemLayer.options.icon) {
-                this._buildImageSymbol(itemSymbol, itemLayer);
+                this._symbols.push(new ImageSymbol(itemLayer, itemSymbol, this));
             }
             else {
-                this._buildMarkerSymbol(itemSymbol, itemLayer);
+                this._symbols.push(new MarkerSymbol(itemLayer, itemSymbol, this));
             }
 
             let itemTitle = L.DomUtil.create('span', null, itemDiv);
             itemTitle.innerText = item;
         }
-    },
-
-    // Build the legend symbol for a marker with an image icon (such as L.Marker)
-    _buildImageSymbol: function (container, layer) {
-        this._symbols.push(new ImageSymbol(layer, container, this));
-    },
-
-    // Build the legend symbol for a marker without an image icon (such as L.CircleMarker)
-    _buildMarkerSymbol: function (container, layer) {
-        let itemCanvas = L.DomUtil.create('canvas', null, container);
-        itemCanvas.height = this.options.maxSymbolSize;
-        itemCanvas.width = this.options.maxSymbolSize;
-        this._drawCircle(layer, itemCanvas);
     },
 
     // Check if a given layer belongs to a class that can be added to the legend
@@ -163,6 +114,101 @@ L.control.featureLegend = function (items, options) {
     return new L.Control.FeatureLegend(items, options);
 };
 
+
+class MarkerSymbol {
+    constructor(layer, container, legend) {
+        this._layer = layer;
+        this._container = container;
+        this._legend = legend;
+        this.scaleFactor = 1;
+        this._markerOptions = this._layer.options;
+
+        this._initialize();
+    }
+
+    _initialize = () => {
+        this._canvas = this._buildMarker();
+        this._rescale()
+        this._draw();
+    }
+
+    _buildMarker = () => {
+        let canvas = L.DomUtil.create('canvas', null, this._container);
+        canvas.height = this._legend.options.maxSymbolSize;
+        canvas.width = this._legend.options.maxSymbolSize;
+
+        return canvas;
+    }
+
+    // Repurposed from Leaflet/Canvas.js to draw paths at a fixed location in the legend
+    _draw = () => {
+        const ctx = this._canvas.getContext('2d');
+        let options = this._markerOptions;
+
+        let r = options.radius / 2;
+        let x = this._legend.options.maxSymbolSize / 2;
+
+        ctx.beginPath();
+        ctx.arc(x, x, r, 0, Math.PI * 2, false);
+
+        if (options.fill) {
+            ctx.globalAlpha = options.fillOpacity;
+            ctx.fillStyle = options.fillColor || options.color;
+            ctx.fill(options.fillRule || 'evenodd');
+        }
+
+        if (options.stroke && options.weight !== 0) {
+            if (ctx.setLineDash) {
+                ctx.setLineDash(this._layer.options && this._layer.options._dashArray || []);
+            }
+            ctx.globalAlpha = options.opacity;
+            ctx.lineWidth = options.weight;
+            ctx.strokeStyle = options.color;
+            ctx.lineCap = options.lineCap;
+            ctx.lineJoin = options.lineJoin;
+            ctx.stroke();
+        }
+    }
+
+    // Calculate the total width of the drawn marker, in pixels
+    _getOffsetWidth = () => {
+        let borderWidth = 0;
+
+        if (this._markerOptions.stroke && this._markerOptions.weight !== 0) {
+            borderWidth = this._markerOptions.weight;
+        }
+
+        let offsetWidth = this._markerOptions.radius + borderWidth;
+
+        return offsetWidth;
+    }
+
+    // Calculate the scale factor to limit the marker size to the symbol size constraints
+    _getScaleFactor = () => {
+        let d = this._getOffsetWidth();
+
+        let scaleFactor = 1;
+        if (d > this._legend.options.maxSymbolSize) {
+            scaleFactor = this._legend.options.maxSymbolSize / d;
+        }
+        else if (d < this._legend.options.minSymbolSize) {
+            scaleFactor = this._legend.options.minSymbolSize / d;
+        }
+
+        return scaleFactor;
+    }
+
+    // Scale the marker size to match the scale factor
+    _rescale = (img) => {
+        this.scaleFactor = this._getScaleFactor();
+        this._markerOptions.radius *= this.scaleFactor;
+        this._markerOptions.weight *= this.scaleFactor;
+    }
+
+    update = () => {
+        this._rescale();
+    }
+}
 
 class ImageSymbol {
     constructor(layer, container, legend) {
