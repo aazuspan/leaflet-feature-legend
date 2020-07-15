@@ -5,12 +5,14 @@ L.Control.FeatureLegend = L.Control.extend({
         maxSymbolSize: 18,
         minSymbolSize: 1,
         collapsed: false,
+        drawShadows: false,
     },
 
     initialize: function (items, options) {
         this.items = items;
         L.Util.setOptions(this, options);
 
+        this._symbols = [];
         this._buildContainer();
     },
 
@@ -113,43 +115,15 @@ L.Control.FeatureLegend = L.Control.extend({
 
     // Build the legend symbol for a marker with an image icon (such as L.Marker)
     _buildImageSymbol: function (container, layer) {
-        let itemImg = L.DomUtil.create('img', null, container);
-        let icon = layer.getIcon();
-
-        itemImg.onload = () => { this._rescaleSymbolImage(itemImg) };
-        // TODO: Generate default path programatically in case the file name is changed within Leaflet
-        itemImg.src = icon instanceof L.Icon.Default ? L.Icon.Default.imagePath + "marker-icon.png" : icon.options.iconUrl;
+        this._symbols.push(new ImageSymbol(layer, container, this));
     },
 
-    // Build the legend icon for a marker without an image icon (such as L.CircleMarker)
+    // Build the legend symbol for a marker without an image icon (such as L.CircleMarker)
     _buildMarkerSymbol: function (container, layer) {
         let itemCanvas = L.DomUtil.create('canvas', null, container);
         itemCanvas.height = this.options.maxSymbolSize;
         itemCanvas.width = this.options.maxSymbolSize;
         this._drawCircle(layer, itemCanvas);
-    },
-
-    // Rescale an icon image
-    _rescaleSymbolImage: function (itemImg) {
-        let maxDimension = Math.max(itemImg.width, itemImg.height);
-        let minDimension = Math.min(itemImg.width, itemImg.height);
-
-        if (maxDimension > this.options.maxSymbolSize) {
-            if (itemImg.width === maxDimension) {
-                itemImg.width = this.options.maxSymbolSize;
-            }
-            else {
-                itemImg.height = this.options.maxSymbolSize;
-            }
-        }
-        else if (minDimension < this.options.minSymbolSize) {
-            if (itemImg.width === minDimension) {
-                itemImg.width = this.options.minSymbolSize;
-            }
-            else {
-                itemImg.height = this.options.minSymbolSize;
-            }
-        }
     },
 
     // Check if a given layer belongs to a class that can be added to the legend
@@ -169,6 +143,11 @@ L.Control.FeatureLegend = L.Control.extend({
     expand: function () {
         this._link.style.display = "none";
         L.DomUtil.addClass(this._container, 'leaflet-control-feature-legend-expanded');
+
+        for (symbol of this._symbols) {
+            symbol.update();
+        }
+
         return this;
     },
 
@@ -183,3 +162,109 @@ L.Control.FeatureLegend = L.Control.extend({
 L.control.featureLegend = function (items, options) {
     return new L.Control.FeatureLegend(items, options);
 };
+
+
+class ImageSymbol {
+    constructor(layer, container, legend) {
+        this._layer = layer;
+        this._container = container;
+        this._legend = legend;
+        this._scaleFactor = 1;
+
+        this._initialize();
+    }
+
+    _initialize = () => {
+        this.icon = this._layer.getIcon();
+
+        this.img = this._buildImg();
+
+        if (this._legend.options.drawShadows && this._hasShadow()) {
+            this.shadow = this._buildShadow();
+        }
+    }
+
+    // Build the img element for the symbol image and add it to the legend
+    _buildImg = () => {
+        let img = L.DomUtil.create('img', null, this._container);
+        img.onload = () => { this._rescale(img); this._recenter(img) };
+        img.src = this.icon instanceof L.Icon.Default ? L.Icon.Default.imagePath + "marker-icon.png" : this.icon.options.iconUrl;
+        img.style.zIndex = 1;
+
+        return img;
+    }
+
+    // Build the img element for the symbol shadow and add it to the legend
+    _buildShadow = () => {
+        let img = L.DomUtil.create('img', null, this._container);
+        img.onload = () => { this._rescale(img); this._recenter(img) };
+        img.src = this.icon instanceof L.Icon.Default ? L.Icon.Default.imagePath + "marker-shadow.png" : this.icon.options.shadowUrl;
+        img.style.zIndex = 0;
+
+        return img;
+    }
+
+    // Check if the Symbol has a defined shadow image
+    _hasShadow = () => {
+        return Boolean(this.icon.options.shadowUrl)
+    }
+
+    // Scale the symbol image to fit within the minimum and maximum dimensions
+    _rescale = (img) => {
+        let maxDimension = Math.max(img.width, img.height);
+        let minDimension = Math.min(img.width, img.height);
+
+        if (maxDimension > this._legend.options.maxSymbolSize) {
+            this._scaleFactor = this._legend.options.maxSymbolSize / maxDimension;
+
+            if (img.width === maxDimension) {
+                img.width = this._legend.options.maxSymbolSize;
+            }
+            else {
+                img.height = this._legend.options.maxSymbolSize;
+            }
+        }
+        else if (minDimension < this._legend.options.minSymbolSize) {
+            this._scaleFactor = this._legend.options.minSymbolSize / minDimension;
+
+            if (img.width === minDimension) {
+                img.width = this._legend.options.minSymbolSize;
+            }
+            else {
+                img.height = this._legend.options.minSymbolSize;
+            }
+        }
+    }
+
+    // Center the symbol image in its container
+    _recenter = (img) => {
+        let containerCenterX = img.parentElement.offsetWidth / 2;
+        let containerCenterY = img.parentElement.offsetHeight / 2;
+
+        let imageCenterX;
+        let imageCenterY;
+
+        if (this.icon.options.iconAnchor) {
+            imageCenterX = this.icon.options.iconAnchor[0] * this._scaleFactor;
+            imageCenterY = this.icon.options.iconAnchor[1] / 2 * this._scaleFactor;
+        }
+        else {
+            imageCenterX = parseInt(img.width) / 2;
+            imageCenterY = parseInt(img.height) / 2;
+        }
+
+        let shiftX = containerCenterX - imageCenterX;
+        let shiftY = containerCenterY - imageCenterY;
+
+        img.style.left = shiftX.toString() + "px";
+        img.style.top = shiftY.toString() + "px";
+    }
+
+    update = () => {
+        if (this.shadow) {
+            this._recenter(this.shadow);
+        }
+
+        this._recenter(this.img);
+    }
+}

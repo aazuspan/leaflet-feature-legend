@@ -16,9 +16,9 @@
 }
 
 .leaflet-control-feature-legend i {
-  text-align: center;
   display: inline-block;
   padding: 0px 3px 0px 4px;
+  position: relative;
 }
 
 .leaflet-control-feature-legend-toggle {
@@ -37,3 +37,6 @@
   padding: 6px 10px 6px 6px;
 }
 
+.leaflet-control-feature-legend-contents img {
+  position: absolute;
+}

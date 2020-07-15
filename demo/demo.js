@@ -25,4 +25,5 @@ const legend = L.control.featureLegend(items, {
     maxSymbolSize: 18,
     minSymbolSize: 2,
     collapsed: true,
+    drawShadows: true,
 }).addTo(myMap);
