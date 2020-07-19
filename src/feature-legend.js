@@ -27,14 +27,14 @@ L.Control.FeatureLegend = L.Control.extend({
         this._sanityCheck();
         this._buildContainer();
 
-        this.calculateScaling();
+        this._calculateScaling();
         this._symbols.forEach((symbol) => {
             symbol.rescale();
         })
     },
 
     // For proportional scaling
-    calculateScaling: function () {
+    _calculateScaling: function () {
         // Current range
         let A = this._getSmallestSymbolSize();
         let B = this._getLargestSymbolSize();
@@ -375,10 +375,9 @@ class ImageSymbol {
 
         // When both images are loaded, rescale and center the images
         let allLoaded = () => {
-            this._legend.calculateScaling();
+            this._legend._calculateScaling();
             this.rescale();
             this.recenter();
-            // TODO: If you had markers and images, the markers might proportional scale before the images are loaded and scale has been calculated. When ALL ImageSymbol images have loaded, scale should be calculated and all symbols rescaled
         }
 
         let count = 1;
