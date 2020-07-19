@@ -20,8 +20,10 @@ const items = {
 const legend = L.control.featureLegend(items, {
     position: "bottomleft",
     title: "Shapes",
-    maxSymbolSize: 18,
+    symbolContainerSize: 24,
+    maxSymbolSize: 24,
     minSymbolSize: 2,
     collapsed: true,
     drawShadows: true,
+    symbolScaling: "clamped"
 }).addTo(myMap);
