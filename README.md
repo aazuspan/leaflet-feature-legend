@@ -46,7 +46,9 @@ const items = {
 const legend = L.control.featureLegend(items, {
     position: "bottomleft",
     title: "Shapes",
-    maxSymbolSize: 18,
+    symbolContainerSize: 24,
+    symbolScaling: "clamped",
+    maxSymbolSize: 24,
     minSymbolSize: 2,
     collapsed: true,
     drawShadows: true,
@@ -64,6 +66,7 @@ const legend = L.control.featureLegend(items, {
 - `items` is an `object` representing the layers that will be included in the legend. 
 - Each property in `items` represents a feature, and should include the feature's label and a layer from which the feature's symbol will be generated.
   - Supported layer types are `L.Marker`, `L.CircleMarker`, or `L.Circle`. 
+  - Layers that use an `L.Icon` MUST have a defined `iconSize`. An error will be thrown for icons without an `iconSize`. 
 - Layers do not need to be added to the map to be included in the legend, so you can create dummy layers to represent a layer type.
   - For example, if your markers are built using an unsupported layer type like `L.GeoJSON`, you can create an `L.Marker` with the same icon to include in the legend.
 
@@ -73,10 +76,22 @@ const legend = L.control.featureLegend(items, {
 | :--- | :--- | :--- | :--- |
 | position | String | 'topleft' | Position of the legend. Possible values are 'topleft', 'topright', 'bottomleft', or 'bottomright'. |
 | title | String | 'Legend' | Title of the legend that will be displayed. To remove the title, set to `null` or empty string. |
-| maxSymbolSize | Number | 18 | Maximum size, in pixels, of any dimension of a symbol to display in the legend. Larger symbols will be scaled to this size. |
-| minSymbolSize | Number | 1 | Minimum size, in pixels, of any dimension of a symbol to display in the legend. Smaller symbols will be scaled to this size. |
+| symbolContainerSize | Number | 24 | Size, in pixels, of the square container element for each symbol. |
+| symbolScaling | String | 'clamped' | Determines how symbols are rescaled to fit in the legend. Possible values are 'proportional', 'maximum', 'clamped', or 'none'. See [Symbol Scaling](#symbol-scaling) for an explanation of each option. |
+| maxSymbolSize | Number | 24 | Upper limit of symbol size, in pixels. See [Symbol Scaling](#symbol-scaling) for an explanation of how these options affect symbol size. Setting `maxSymbolSize` greater than `symbolContainerSize` is not recommended, as it may cause overlapping and other issues. |
+| minSymbolSize | Number | 2 | Lower limit of symbol size, in pixels. See [Symbol Scaling](#symbol-scaling) for an explanation of how these options affect symbol size. |
 | collapsed | Boolean | false | If `true`, the legend will be collapsed into an icon and expanded on mouse hover. |
 | drawShadows | Boolean | false | If `true`, layers using an `L.Icon` with a defined `shadowUrl` (such as the default `L.Icon`) will include the shadow in the legend symbol. |
+
+#### Symbol Scaling
+Different symbol scaling options are supported, and are defined using the `symbolScaling` option. The chosen symbol scaling option also affects how `maxSymbolSize` and `minSymbolSize` are implemented. These symbol scaling options apply to image icons and markers. All scaling options maintain the aspect ratio of markers and icons. <br />
+
+| Value | Description |
+| :--- | :--- |
+| proportional | All symbols are linearly scaled between `minSymbolSize` and `maxSymbolSize`. Relative scale between symbols is preserved. If you have symbols that are too large for the legend, but maintaining relative sizes is important to distinguishing symbols, this may be the best option. |
+| maximum | All symbols are scaled exactly to the `maxSymbolSize`. All symbols will appear the same size. If you have symbols that are hard to distinguish and the relative size does not matter, this may be the best option. |
+| clamped | Symbols larger than `maxSymbolSize` are scaled down to `maxSymbolSize`. Symbols smaller than `minSymbolSize` are scaled up to `minSymbolSize`. This is the simplest option to make sure symbols fit within the symbol container. However, relative scale between symbols can be misleading if some are clamped and others are not. |
+| none | No scaling is applied, and symbols are left in their native size. This may cause overlapping or other issues, but gives the user full control of scaling. |
 
 ### Methods
 | Method | Returns | Description |
