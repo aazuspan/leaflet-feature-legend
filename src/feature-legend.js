@@ -340,8 +340,6 @@ class MarkerSymbol {
     _scaleToDiameter = (diameter) => {
         this._markerOptions.weight = (diameter * this._strokeRatio);
         this._markerOptions.radius = (diameter - this._markerOptions.weight) / 2;
-
-        console.log(this._markerOptions.weight + this._markerOptions.radius, this._getOffsetSize());
     }
 }
 
