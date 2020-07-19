@@ -2,18 +2,63 @@ L.Control.FeatureLegend = L.Control.extend({
     options: {
         position: 'topleft',
         title: 'Legend',
-        maxSymbolSize: 18,
-        minSymbolSize: 1,
+        symbolContainerSize: 24,
+        maxSymbolSize: 24,
+        minSymbolSize: 2,
         collapsed: false,
         drawShadows: false,
+        symbolScaling: "clamped",
     },
 
     initialize: function (items, options) {
-        this.items = items;
         L.Util.setOptions(this, options);
-
+        this.items = items;
         this._symbols = [];
+        this.symbolSize = this.options.maxSymbolSize;
+        this.symbolScalingOptions = [
+            "proportional",
+            "maximum",
+            "clamped",
+            "none",
+        ];
+        this.scale = 1;
+        this.offset = 0;
+
+        this._sanityCheck();
         this._buildContainer();
+
+        this.calculateScaling();
+        this._symbols.forEach((symbol) => {
+            symbol.rescale();
+        })
+    },
+
+    // For proportional scaling
+    calculateScaling: function () {
+        // Current range
+        let A = this._getSmallestSymbolSize();
+        let B = this._getLargestSymbolSize();
+
+        // Rescaled range
+        let C = this.options.minSymbolSize;
+        let D = this.options.maxSymbolSize;
+
+        this.scale = (D - C) / (B - A);
+        this.offset = -A * this.scale + C;
+    },
+
+    // Run some checks on user parameters to make sure they are reasonable
+    _sanityCheck: function () {
+        if (this.options.maxSymbolSize > this.options.symbolContainerSize) {
+            console.warn("maxSymbolSize is greater than symbolContainerSize. This may cause overlapping between symbols.");
+        }
+        if (this.options.maxSymbolSize < this.options.minSymbolSize) {
+            console.warn("maxSymbolSize is less than minSymbolSize. This may lead to unexpected results.")
+        }
+        // Check that a valid symbolScaling option is chosen
+        if (this.symbolScalingOptions.indexOf(this.options.symbolScaling) < 0) {
+            throw new Error(`Error: symbolScaling option "${this.options.symbolScaling}" not valid. Choose from "${this.symbolScalingOptions}."`)
+        }
     },
 
     _initLayout: function () {
@@ -61,16 +106,25 @@ L.Control.FeatureLegend = L.Control.extend({
             }
 
             let itemDiv = L.DomUtil.create('div', null, this._contents);
-            let itemSymbol = L.DomUtil.create('i', null, itemDiv);
-
-            itemSymbol.style.width = itemSymbol.style.height = this.options.maxSymbolSize.toString() + "px";
+            let symbolContainer = L.DomUtil.create('i', null, itemDiv);
+            let itemSymbol;
 
             if (itemLayer.options.icon) {
-                this._symbols.push(new ImageSymbol(itemLayer, itemSymbol, this));
+                if (!itemLayer.options.icon.options.iconSize) {
+                    throw new Error(`Error: No icon size is defined for ${item}!`)
+                }
+                if (itemLayer.options.icon.options.shadowUrl && !itemLayer.options.icon.options.shadowSize) {
+                    throw new Error(`Error: ${item} has a shadowUrl but no defined shadowSize!`)
+                }
+                itemSymbol = new ImageSymbol(itemLayer, symbolContainer, this)
+
             }
             else {
-                this._symbols.push(new MarkerSymbol(itemLayer, itemSymbol, this));
+                itemSymbol = new MarkerSymbol(itemLayer, symbolContainer, this);
             }
+
+            itemSymbol._container.style.width = itemSymbol._container.style.height = this.options.symbolContainerSize + "px";
+            this._symbols.push(itemSymbol);
 
             let itemTitle = L.DomUtil.create('span', null, itemDiv);
             itemTitle.innerText = item;
@@ -96,7 +150,7 @@ L.Control.FeatureLegend = L.Control.extend({
         L.DomUtil.addClass(this._container, 'leaflet-control-feature-legend-expanded');
 
         for (symbol of this._symbols) {
-            symbol.update();
+            symbol.recenter();
         }
 
         return this;
@@ -106,6 +160,33 @@ L.Control.FeatureLegend = L.Control.extend({
         this._link.style.display = "block";
         L.DomUtil.removeClass(this._container, 'leaflet-control-feature-legend-expanded');
         return this;
+    },
+
+    // Find the size of the largest dimension of all symbols, in pixels
+    _getLargestSymbolSize: function () {
+        let largestSize = 0;
+
+        for (let symbol of this._symbols) {
+            if (symbol.getLargestDimension() > largestSize) {
+
+                largestSize = symbol.getLargestDimension();
+            }
+        }
+
+        return largestSize;
+    },
+
+    // Find the size of the smallest dimension of all symbols, in pixels
+    _getSmallestSymbolSize: function () {
+        let smallestSize = Infinity;
+
+        for (let symbol of this._symbols) {
+            if (symbol.getSmallestDimension() < smallestSize) {
+                smallestSize = symbol.getSmallestDimension();
+            }
+        }
+
+        return smallestSize;
     },
 })
 
@@ -120,7 +201,6 @@ class MarkerSymbol {
         this._layer = layer;
         this._container = container;
         this._legend = legend;
-        this.scaleFactor = 1;
         this._markerOptions = this._layer.options;
 
         this._initialize();
@@ -128,25 +208,29 @@ class MarkerSymbol {
 
     _initialize = () => {
         this._canvas = this._buildMarker();
-        this._rescale()
+
+        this._strokeRatio = 0
+        if (this._markerOptions.stroke && this._markerOptions.weight !== 0) {
+            this._strokeRatio = this._markerOptions.weight / this.getLargestDimension();
+        }
+
         this._draw();
     }
 
     _buildMarker = () => {
         let canvas = L.DomUtil.create('canvas', null, this._container);
-        canvas.height = this._legend.options.maxSymbolSize;
-        canvas.width = this._legend.options.maxSymbolSize;
-
+        canvas.height = canvas.width = this._legend.options.symbolContainerSize;
         return canvas;
     }
 
     // Repurposed from Leaflet/Canvas.js to draw paths at a fixed location in the legend
     _draw = () => {
-        const ctx = this._canvas.getContext('2d');
+        const ctx = this._ctx = this._canvas.getContext('2d');
+
         let options = this._markerOptions;
 
-        let r = options.radius / 2;
-        let x = this._legend.options.maxSymbolSize / 2;
+        let r = options.radius;
+        let x = this._legend.options.symbolContainerSize / 2;
 
         ctx.beginPath();
         ctx.arc(x, x, r, 0, Math.PI * 2, false);
@@ -170,43 +254,94 @@ class MarkerSymbol {
         }
     }
 
-    // Calculate the total width of the drawn marker, in pixels
-    _getOffsetWidth = () => {
+    _clear = () => {
+        this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+    }
+
+    // Calculate the total diameter of the drawn marker, in pixels
+    _getOffsetSize = () => {
         let borderWidth = 0;
 
         if (this._markerOptions.stroke && this._markerOptions.weight !== 0) {
             borderWidth = this._markerOptions.weight;
         }
 
-        let offsetWidth = this._markerOptions.radius + borderWidth;
+        let offsetSize = (this._markerOptions.radius + borderWidth) * 2;
 
-        return offsetWidth;
+        return offsetSize;
     }
 
-    // Calculate the scale factor to limit the marker size to the symbol size constraints
-    _getScaleFactor = () => {
-        let d = this._getOffsetWidth();
+    // Return the largest dimension of the marker, in pixels
+    getLargestDimension = () => {
+        return this._getOffsetSize();
+    }
 
-        let scaleFactor = 1;
+    // Return the smallest dimension of the marker, in pixels
+    getSmallestDimension = () => {
+        return this._getOffsetSize();
+    }
+
+    // Apply the appropriate scaling method to the symbol marker
+    rescale = () => {
+        switch (this._legend.options.symbolScaling) {
+            case "clamped":
+                this._clampedScale()
+                break;
+            case "maximum":
+                this._maximumScale();
+                break;
+            case "proportional":
+                this._proportionalScale(this._legend.scale, this._legend.offset);
+                break;
+            case "none":
+                break;
+        }
+
+        this._clear();
+        this._draw();
+    }
+
+    // TODO: It's silly to have a method that does nothing
+    recenter = () => {
+
+    }
+
+    // Clamp the symbol marker size between the minimum and maximum dimensions
+    _clampedScale = () => {
+        let d = this.getLargestDimension();
+        let rescaleDiameter = null;
+
         if (d > this._legend.options.maxSymbolSize) {
-            scaleFactor = this._legend.options.maxSymbolSize / d;
+            rescaleDiameter = this._legend.options.maxSymbolSize;
         }
         else if (d < this._legend.options.minSymbolSize) {
-            scaleFactor = this._legend.options.minSymbolSize / d;
+            rescaleDiameter = this._legend.options.minSymbolSize;
+        }
+        else {
+            rescaleDiameter = d;
         }
 
-        return scaleFactor;
+        this._scaleToDiameter(rescaleDiameter);
     }
 
-    // Scale the marker size to match the scale factor
-    _rescale = (img) => {
-        this.scaleFactor = this._getScaleFactor();
-        this._markerOptions.radius *= this.scaleFactor;
-        this._markerOptions.weight *= this.scaleFactor;
+    // Linearly scale the symbol marker using scale and offset values
+    _proportionalScale = (scale, offset) => {
+        let rescaleDiameter = this.getLargestDimension() * scale + offset;
+        this._scaleToDiameter(rescaleDiameter);
     }
 
-    update = () => {
-        this._rescale();
+    // Scale the symbol marker to the max symbol size
+    _maximumScale = () => {
+        let rescaleDiameter = this._legend.options.maxSymbolSize;
+        this._scaleToDiameter(rescaleDiameter);
+    }
+
+    // Proportionally scale the radius and stroke weight of the marker to a new diameter
+    _scaleToDiameter = (diameter) => {
+        this._markerOptions.weight = (diameter * this._strokeRatio);
+        this._markerOptions.radius = (diameter - this._markerOptions.weight) / 2;
+
+        console.log(this._markerOptions.weight + this._markerOptions.radius, this._getOffsetSize());
     }
 }
 
@@ -215,102 +350,196 @@ class ImageSymbol {
         this._layer = layer;
         this._container = container;
         this._legend = legend;
-        this._scaleFactor = 1;
+        this._icon = this._layer.getIcon();
 
-        this._initialize();
+        this._img = null;
+        this._width = this._icon.options.iconSize[0];
+        this._height = this._icon.options.iconSize[1];
+
+        if (this._hasShadow()) {
+            this._shadow = null;
+            this._shadowWidth = this._icon.options.shadowSize[0];
+            this._shadowHeight = this._icon.options.shadowSize[1];
+        }
+
+        this._loadImages();
     }
 
-    _initialize = () => {
-        this.icon = this._layer.getIcon();
+    // Async load main and shadow images, rescaling and centering after loading
+    _loadImages = () => {
+        // When an image finishes loading, check if both images are loaded
+        let imageLoaded = () => {
+            count--;
+            if (count == 0) {
+                allLoaded();
+            }
+        }
 
-        this.img = this._buildImg();
+        // When both images are loaded, rescale and center the images
+        let allLoaded = () => {
+            this._legend.calculateScaling();
+            this.rescale();
+            this.recenter();
+            // TODO: If you had markers and images, the markers might proportional scale before the images are loaded and scale has been calculated. When ALL ImageSymbol images have loaded, scale should be calculated and all symbols rescaled
+        }
+
+        let count = 1;
 
         if (this._legend.options.drawShadows && this._hasShadow()) {
-            this.shadow = this._buildShadow();
+            count++;
+            let shadow = L.DomUtil.create('img', null, this._container);
+            shadow.onload = imageLoaded;
+            shadow.src = this._icon instanceof L.Icon.Default ? L.Icon.Default.imagePath + "marker-shadow.png" : this._icon.options.shadowUrl;
+            shadow.style.zIndex = 0;
+            this._shadow = shadow;
         }
-    }
 
-    // Build the img element for the symbol image and add it to the legend
-    _buildImg = () => {
         let img = L.DomUtil.create('img', null, this._container);
-        img.onload = () => { this._rescale(img); this._recenter(img) };
-        img.src = this.icon instanceof L.Icon.Default ? L.Icon.Default.imagePath + "marker-icon.png" : this.icon.options.iconUrl;
+        img.onload = imageLoaded;
+        img.src = this._icon instanceof L.Icon.Default ? L.Icon.Default.imagePath + "marker-icon.png" : this._icon.options.iconUrl;
         img.style.zIndex = 1;
-
-        return img;
-    }
-
-    // Build the img element for the symbol shadow and add it to the legend
-    _buildShadow = () => {
-        let img = L.DomUtil.create('img', null, this._container);
-        img.onload = () => { this._rescale(img); this._recenter(img) };
-        img.src = this.icon instanceof L.Icon.Default ? L.Icon.Default.imagePath + "marker-shadow.png" : this.icon.options.shadowUrl;
-        img.style.zIndex = 0;
-
-        return img;
+        this._img = img;
     }
 
     // Check if the Symbol has a defined shadow image
     _hasShadow = () => {
-        return Boolean(this.icon.options.shadowUrl)
+        return Boolean(this._icon.options.shadowUrl)
     }
 
-    // Scale the symbol image to fit within the minimum and maximum dimensions
-    _rescale = (img) => {
-        let maxDimension = Math.max(img.width, img.height);
-        let minDimension = Math.min(img.width, img.height);
+    // Return the largest dimension of the marker, in pixels
+    getLargestDimension = () => {
+        return Math.max(this._width, this._height);
+    }
 
-        if (maxDimension > this._legend.options.maxSymbolSize) {
-            this._scaleFactor = this._legend.options.maxSymbolSize / maxDimension;
-
-            if (img.width === maxDimension) {
-                img.width = this._legend.options.maxSymbolSize;
-            }
-            else {
-                img.height = this._legend.options.maxSymbolSize;
-            }
-        }
-        else if (minDimension < this._legend.options.minSymbolSize) {
-            this._scaleFactor = this._legend.options.minSymbolSize / minDimension;
-
-            if (img.width === minDimension) {
-                img.width = this._legend.options.minSymbolSize;
-            }
-            else {
-                img.height = this._legend.options.minSymbolSize;
-            }
-        }
+    // Return the smallest dimension of the marker, in pixels
+    getSmallestDimension = () => {
+        return Math.min(this._width, this._height);
     }
 
     // Center the symbol image in its container
-    _recenter = (img) => {
-        let containerCenterX = img.parentElement.offsetWidth / 2;
-        let containerCenterY = img.parentElement.offsetHeight / 2;
+    recenter = () => {
+        let containerCenterX = this._container.offsetWidth / 2;
+        let containerCenterY = this._container.offsetHeight / 2;
 
         let imageCenterX;
         let imageCenterY;
 
-        if (this.icon.options.iconAnchor) {
-            imageCenterX = this.icon.options.iconAnchor[0] * this._scaleFactor;
-            imageCenterY = this.icon.options.iconAnchor[1] / 2 * this._scaleFactor;
+        if (this._icon.options.iconAnchor) {
+            let iconAnchorRatioX = this._icon.options.iconAnchor[0] / this._width;
+            let iconAnchorRatioY = this._icon.options.iconAnchor[0] / this._width;
+
+            imageCenterX = this._img.width * iconAnchorRatioX;
+            imageCenterY = this._img.height * iconAnchorRatioY;
         }
         else {
-            imageCenterX = parseInt(img.width) / 2;
-            imageCenterY = parseInt(img.height) / 2;
+            imageCenterX = parseInt(this._img.width) / 2;
+            imageCenterY = parseInt(this._img.height) / 2;
         }
 
         let shiftX = containerCenterX - imageCenterX;
         let shiftY = containerCenterY - imageCenterY;
 
-        img.style.left = shiftX.toString() + "px";
-        img.style.top = shiftY.toString() + "px";
+        this._img.style.left = shiftX.toString() + "px";
+        this._img.style.top = shiftY.toString() + "px";
+
+
+        if (this._shadow) {
+            let shadowCenterX;
+            let shadowCenterY;
+
+            if (this._icon.options.shadowAnchor) {
+                let shadowAnchorRatioX = this._icon.options.shadowAnchor[0] / this._icon.options.shadowSize[0];
+                let shadowAnchorRatioY = this._icon.options.shadowAnchor[0] / this._icon.options.shadowSize[0];
+
+                shadowCenterX = this._img.width * shadowAnchorRatioX;
+                shadowCenterY = this._img.height * shadowAnchorRatioY;
+            }
+            else {
+                shadowCenterX = parseInt(this._img.width) / 2;
+                shadowCenterY = parseInt(this._img.height) / 2;
+            }
+
+            let shadowShiftX = containerCenterX - shadowCenterX;
+            let shadowShiftY = containerCenterY - shadowCenterY;
+
+            this._shadow.style.left = shadowShiftX.toString() + "px";
+            this._shadow.style.top = shadowShiftY.toString() + "px";
+        }
     }
 
-    update = () => {
-        if (this.shadow) {
-            this._recenter(this.shadow);
+    // Apply the appropriate scaling method to the symbol image
+    rescale = () => {
+        switch (this._legend.options.symbolScaling) {
+            case "clamped":
+                this._clampedScale();
+                break;
+            case "maximum":
+                this._maximumScale();
+                break;
+            case "proportional":
+                this._proportionalScale(this._legend.scale, this._legend.offset);
+                break;
+            case "none":
+                break;
         }
+    }
 
-        this._recenter(this.img);
+    // Clamp the symbol image size between the minimum and maximum dimensions
+    _clampedScale = () => {
+        for (let img of [this._img, this._shadow]) {
+            if (img) {
+                let maxDimension = Math.max(this._width, this._height);
+                let minDimension = Math.min(this._width, this._height);
+
+                if (maxDimension > this._legend.options.maxSymbolSize) {
+                    if (img.width === maxDimension) {
+                        img.width = this._legend.options.maxSymbolSize;
+                    }
+                    else {
+                        img.height = this._legend.options.maxSymbolSize;
+                    }
+                }
+                else if (minDimension < this._legend.options.minSymbolSize) {
+                    if (img.width === maxDimension) {
+                        img.width = this._legend.options.minSymbolSize;
+                    }
+                    else {
+                        img.height = this._legend.options.minSymbolSize;
+                    }
+                }
+            }
+        }
+    }
+
+    // Linearly scale the symbol image using scale and offset values
+    _proportionalScale = (scale, offset) => {
+        if (this._img.width === this.getLargestDimension()) {
+            this._img.width = this._width * scale + offset;
+            if (this._shadow) {
+                this._shadow.width = this._shadowWidth * scale + offset;
+            }
+        }
+        else {
+            this._img.height = this._height * scale + offset;
+            if (this._shadow) {
+                this._shadow.height = this._shadowHeight * scale + offset;
+            }
+        }
+    }
+
+    // Scale the image to the max symbol size
+    _maximumScale = () => {
+        if (this._img.width === this.getLargestDimension()) {
+            this._img.width = this._legend.options.maxSymbolSize;
+            if (this._shadow) {
+                this._shadow.width = this._legend.options.maxSymbolSize;
+            }
+        }
+        else {
+            this._img.height = this._legend.options.maxSymbolSize;
+            if (this._shadow) {
+                this._shadow.height = this._legend.options.maxSymbolSize;
+            }
+        }
     }
 }
